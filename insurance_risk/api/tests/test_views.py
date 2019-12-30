@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-RISK_URL = reverse('risk-profile')
+RISK_PROFILE_URL = reverse('risk-profile')
 
 
 class RiskProfileEndpointTestCase(TestCase):
@@ -21,12 +21,12 @@ class RiskProfileEndpointTestCase(TestCase):
             }
 
     def test_endpoint_only_accepts_post_requests(self):
-        wrong_methods = [
-            self.client.get, self.client.patch, self.client.get,
-            self.client.delete, self.client, put
+        request_methods = [
+            self.client.get, self.client.put, self.client.patch,
+            self.client.delete
         ]
-        for request_method in wrong_methods:
-            response = request_method(RISK_URL)
+        for request_method in request_methods:
+            response = request_method(RISK_PROFILE_URL)
             self.assertEqual(
                 response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
             )
