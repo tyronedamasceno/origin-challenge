@@ -52,5 +52,4 @@ class RiskProfileEndpointTestCase(TestCase):
             RISK_PROFILE_URL, self.base_payload, format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        import pdb; pdb.set_trace()
         self.assertEqual(response.data, expected_response)

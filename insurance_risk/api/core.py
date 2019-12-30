@@ -77,7 +77,7 @@ def handle_scores_by_marital_status(scores, marital_status):
 
 def handle_scores_by_vehicle(scores, vehicle):
     if vehicle and vehicle['year'] >= datetime.now().year - 5:
-        scores = add_risk_points(scores, 1, ('vehicle', ))
+        scores = add_risk_points(scores, 1, ('auto', ))
     return scores
 
 
