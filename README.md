@@ -10,6 +10,7 @@ If you want to run it on your machine, please be sure you have python 3.8 (or la
 
 When you have *venv* activated, follow the steps below:
 ```
+$ pip install -r requirements.txt
 $ python manage.py migrate
 $ python manage.py runserver
 ```
