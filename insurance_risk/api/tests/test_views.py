@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -8,7 +10,7 @@ RISK_PROFILE_URL = reverse('risk-profile')
 
 
 class RiskProfileEndpointTestCase(TestCase):
-    def setup(self):
+    def setUp(self):
         self.client = APIClient()
         self.base_payload = {
             "age": 35,
@@ -40,3 +42,17 @@ class RiskProfileEndpointTestCase(TestCase):
         
         for param in body_params:
             self.assertIn(param, response.data)
+
+    def test_successful_risk_profile_calculating(self):
+        expected_response = {
+            "auto": "regular",
+            "disability": "ineligible",
+            "home": "economic",
+            "life": "regular"
+        }
+
+        response = self.client.post(
+            RISK_PROFILE_URL, self.base_payload, format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
