@@ -1,10 +1,12 @@
 from rest_framework import serializers
 
-from api.enum import Score
+from api.enum import HouseOwnership, Score, UserMaritalStatus
 
 
 class HouseSerializer(serializers.Serializer):
-    ownership_status = serializers.ChoiceField(choices=('owned', 'mortgaged'))
+    ownership_status = serializers.ChoiceField(
+        choices=HouseOwnership.choices()
+    )
 
 
 class VehicleSerializer(serializers.Serializer):
@@ -15,7 +17,9 @@ class UserInputSerializer(serializers.Serializer):
     age = serializers.IntegerField()
     dependents = serializers.IntegerField()
     income = serializers.IntegerField()
-    marital_status = serializers.ChoiceField(choices=('single', 'married'))
+    marital_status = serializers.ChoiceField(
+        choices=UserMaritalStatus.choices()
+    )
     risk_questions = serializers.ListField(child=serializers.IntegerField())
     house = HouseSerializer(required=False)
     vehicle = VehicleSerializer(required=False)

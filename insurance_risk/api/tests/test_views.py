@@ -1,5 +1,3 @@
-import json
-
 from django.test import TestCase
 from django.urls import reverse
 
@@ -39,7 +37,7 @@ class RiskProfileEndpointTestCase(TestCase):
         ]
         response = self.client.post(RISK_PROFILE_URL, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        
+
         for param in body_params:
             self.assertIn(param, response.data)
 
