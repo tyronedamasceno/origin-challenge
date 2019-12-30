@@ -34,10 +34,9 @@ class RiskProfileEndpointTestCase(TestCase):
     def test_risk_profile_requires_valid_json_payload(self):
         body_params = [
             'age', 'dependents', 'income', 'marital_status', 'risk_questions',
-            'vehicle', 'house'
         ]
         response = self.client.post(RISK_PROFILE_URL, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        
         for param in body_params:
             self.assertIn(param, response.data)
