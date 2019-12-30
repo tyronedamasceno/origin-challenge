@@ -18,7 +18,7 @@ class RiskProfileEndpointTestCase(TestCase):
             "marital_status": "married",
             "risk_questions": [0, 1, 0],
             "vehicle": {"year": 2018}
-            }
+        }
 
     def test_endpoint_only_accepts_post_requests(self):
         request_methods = [
@@ -48,9 +48,9 @@ class RiskProfileEndpointTestCase(TestCase):
             "home": "economic",
             "life": "regular"
         }
-
         response = self.client.post(
             RISK_PROFILE_URL, self.base_payload, format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        import pdb; pdb.set_trace()
         self.assertEqual(response.data, expected_response)
