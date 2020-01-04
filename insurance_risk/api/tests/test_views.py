@@ -4,6 +4,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
+from freezegun import freeze_time
+
 RISK_PROFILE_URL = reverse('risk-profile')
 
 
@@ -41,6 +43,7 @@ class RiskProfileEndpointTestCase(TestCase):
         for param in body_params:
             self.assertIn(param, response.data)
 
+    @freeze_time('2020-01-04')
     def test_successful_risk_profile_calculating(self):
         expected_response = {
             "auto": "regular",
