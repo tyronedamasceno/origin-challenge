@@ -1,6 +1,9 @@
 from django.test import TestCase
 
+from freezegun import freeze_time
+
 from api import core
+from api.enum import Score, HouseOwnership, UserMaritalStatus
 
 
 class InsuranceEligibilityTestCase(TestCase):
@@ -47,7 +50,7 @@ class InsuranceEligibilityTestCase(TestCase):
         self.assertNotIn('disability', scores_with_age_over_60)
 
 
-class RiskAlgorithmRulesTestCase(TestCase):
+class UtilsFunctionsTestCase(TestCase):
     def setUp(self):
         self.base_scores = core.get_base_scores([0, 0, 0])
 
@@ -75,3 +78,105 @@ class RiskAlgorithmRulesTestCase(TestCase):
             score == -2 for field, score in deduct_2_from_home_and_life.items()
             if field in ('home', 'life'))
         )
+
+    def test_getting_score_by_value(self):
+        self.assertEqual(core.get_score_by_value(-1), Score.economic)
+        self.assertEqual(core.get_score_by_value(0), Score.economic)
+
+        self.assertEqual(core.get_score_by_value(1), Score.regular)
+        self.assertEqual(core.get_score_by_value(2), Score.regular)
+
+        self.assertEqual(core.get_score_by_value(3), Score.responsible)
+        self.assertEqual(core.get_score_by_value(4), Score.responsible)
+
+
+class RiskAlgorithmRulesTestCase(TestCase):
+    def setUp(self):
+        # Base scores start with 2
+        self.base_scores = core.get_base_scores([1, 1, 0])
+
+    def test_age_rule(self):
+        under_30_user_scores = core.handle_scores_by_age(
+            dict(self.base_scores), age=29
+        )
+        between_30_40_user_scores = core.handle_scores_by_age(
+            dict(self.base_scores), age=35
+        )
+        self.assertTrue(all(
+            score == 0 for field, score in under_30_user_scores.items())
+        )
+        self.assertTrue(all(
+            score == 1 for field, score in between_30_40_user_scores.items())
+        )
+
+    def test_income_rule(self):
+        over_200k_user_score = core.handle_scores_by_income(
+            dict(self.base_scores), income=200001
+        )
+        under_200k_user_score = core.handle_scores_by_income(
+            dict(self.base_scores), income=199999
+        )
+        self.assertTrue(all(
+            score == 1 for field, score in over_200k_user_score.items())
+        )
+        self.assertTrue(all(
+            score == 2 for field, score in under_200k_user_score.items())
+        )
+
+    def test_house_status_rule(self):
+        mortgaged_house_user_score = core.handle_scores_by_house_status(
+            dict(self.base_scores),
+            house={'ownership_status': HouseOwnership.mortgaged}
+        )
+        owned_house_user_score = core.handle_scores_by_house_status(
+            dict(self.base_scores),
+            house={'ownership_status': HouseOwnership.owned}
+        )
+        self.assertTrue(all(
+            score == 3 for field, score in mortgaged_house_user_score.items()
+            if field in ('home', 'disability'))
+        )
+        self.assertTrue(all(
+            score == 2 for field, score in owned_house_user_score.items()
+            if field in ('home', 'disability'))
+        )
+
+    def test_dependents_rule(self):
+        user_with_dependents_score = core.handle_scores_by_dependents(
+            dict(self.base_scores), dependents=1
+        )
+        user_without_dependent_score = core.handle_scores_by_dependents(
+            dict(self.base_scores), dependents=0
+        )
+        self.assertTrue(all(
+            score == 3 for field, score in user_with_dependents_score.items()
+            if field in ('life', 'disability'))
+        )
+        self.assertTrue(all(
+            score == 2 for field, score in user_without_dependent_score.items()
+            if field in ('life', 'disability'))
+        )
+
+    def test_marital_status_rule(self):
+        user_married_score = core.handle_scores_by_marital_status(
+            dict(self.base_scores), marital_status=UserMaritalStatus.married
+        )
+        user_not_married_score = core.handle_scores_by_marital_status(
+            dict(self.base_scores), marital_status=UserMaritalStatus.single
+        )
+        self.assertEqual(user_married_score['life'], 3)
+        self.assertEqual(user_married_score['disability'], 1)
+        self.assertTrue(all(
+            score == 2 for field, score in user_not_married_score.items())
+        )
+
+    @freeze_time('2020-01-04')
+    def test_vehicle_rule(self):
+        user_with_new_vehicle_score = core.handle_scores_by_vehicle(
+            dict(self.base_scores), vehicle={'year': 2019}
+        )
+        user_with_old_vehicle_score = core.handle_scores_by_vehicle(
+            dict(self.base_scores), vehicle={'year': 2012}
+        )
+        self.assertEqual(user_with_new_vehicle_score['auto'], 3)
+        self.assertEqual(user_with_old_vehicle_score['auto'], 2)
