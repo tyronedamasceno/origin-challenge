@@ -5,12 +5,12 @@ from api.enum import HouseOwnership, Score, UserMaritalStatus
 
 class HouseSerializer(serializers.Serializer):
     ownership_status = serializers.ChoiceField(
-        choices=HouseOwnership.choices()
+        choices=HouseOwnership.choices(), required=False
     )
 
 
 class VehicleSerializer(serializers.Serializer):
-    year = serializers.IntegerField()
+    year = serializers.IntegerField(required=False)
 
 
 class UserInputSerializer(serializers.Serializer):
@@ -21,8 +21,8 @@ class UserInputSerializer(serializers.Serializer):
         choices=UserMaritalStatus.choices()
     )
     risk_questions = serializers.ListField(child=serializers.IntegerField())
-    house = HouseSerializer(required=False)
-    vehicle = VehicleSerializer(required=False)
+    house = HouseSerializer()
+    vehicle = VehicleSerializer()
 
 
 class RiskProfileSerializer(serializers.Serializer):
