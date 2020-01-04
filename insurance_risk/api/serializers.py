@@ -21,6 +21,7 @@ class UserInputSerializer(serializers.Serializer):
         choices=UserMaritalStatus.choices()
     )
     risk_questions = serializers.ListField(
+        min_length=3, max_length=3,
         child=serializers.IntegerField(min_value=0, max_value=1)
     )
     house = HouseSerializer()
