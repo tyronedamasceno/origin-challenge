@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from freezegun import freeze_time
 
-from api import core
+from api import core, rules
 from api.enum import Score, HouseOwnership, UserMaritalStatus
 
 
@@ -55,12 +55,12 @@ class UtilsFunctionsTestCase(TestCase):
         self.base_scores = core.get_base_scores([0, 0, 0])
 
     def test_add_and_deduct_risk_points(self):
-        add_1_to_all = core.add_risk_points(dict(self.base_scores), 1)
-        add_2_to_auto_and_disability = core.add_risk_points(
+        add_1_to_all = rules.add_risk_points(dict(self.base_scores), 1)
+        add_2_to_auto_and_disability = rules.add_risk_points(
             dict(self.base_scores), 2, ('auto', 'disability')
         )
-        deduct_1_from_all = core.deduct_risk_points(dict(self.base_scores), 1)
-        deduct_2_from_home_and_life = core.deduct_risk_points(
+        deduct_1_from_all = rules.deduct_risk_points(dict(self.base_scores), 1)
+        deduct_2_from_home_and_life = rules.deduct_risk_points(
             dict(self.base_scores), 2, ('home', 'life')
         )
 
@@ -96,10 +96,10 @@ class RiskAlgorithmRulesTestCase(TestCase):
         self.base_scores = core.get_base_scores([1, 1, 0])
 
     def test_age_rule(self):
-        under_30_user_scores = core.handle_scores_by_age(
+        under_30_user_scores = rules.handle_scores_by_age(
             dict(self.base_scores), age=29
         )
-        between_30_40_user_scores = core.handle_scores_by_age(
+        between_30_40_user_scores = rules.handle_scores_by_age(
             dict(self.base_scores), age=35
         )
         self.assertTrue(all(
@@ -110,10 +110,10 @@ class RiskAlgorithmRulesTestCase(TestCase):
         )
 
     def test_income_rule(self):
-        over_200k_user_score = core.handle_scores_by_income(
+        over_200k_user_score = rules.handle_scores_by_income(
             dict(self.base_scores), income=200001
         )
-        under_200k_user_score = core.handle_scores_by_income(
+        under_200k_user_score = rules.handle_scores_by_income(
             dict(self.base_scores), income=199999
         )
         self.assertTrue(all(
@@ -124,11 +124,11 @@ class RiskAlgorithmRulesTestCase(TestCase):
         )
 
     def test_house_status_rule(self):
-        mortgaged_house_user_score = core.handle_scores_by_house_status(
+        mortgaged_house_user_score = rules.handle_scores_by_house_status(
             dict(self.base_scores),
             house={'ownership_status': HouseOwnership.mortgaged}
         )
-        owned_house_user_score = core.handle_scores_by_house_status(
+        owned_house_user_score = rules.handle_scores_by_house_status(
             dict(self.base_scores),
             house={'ownership_status': HouseOwnership.owned}
         )
@@ -142,10 +142,10 @@ class RiskAlgorithmRulesTestCase(TestCase):
         )
 
     def test_dependents_rule(self):
-        user_with_dependents_score = core.handle_scores_by_dependents(
+        user_with_dependents_score = rules.handle_scores_by_dependents(
             dict(self.base_scores), dependents=1
         )
-        user_without_dependent_score = core.handle_scores_by_dependents(
+        user_without_dependent_score = rules.handle_scores_by_dependents(
             dict(self.base_scores), dependents=0
         )
         self.assertTrue(all(
@@ -158,10 +158,10 @@ class RiskAlgorithmRulesTestCase(TestCase):
         )
 
     def test_marital_status_rule(self):
-        user_married_score = core.handle_scores_by_marital_status(
+        user_married_score = rules.handle_scores_by_marital_status(
             dict(self.base_scores), marital_status=UserMaritalStatus.married
         )
-        user_not_married_score = core.handle_scores_by_marital_status(
+        user_not_married_score = rules.handle_scores_by_marital_status(
             dict(self.base_scores), marital_status=UserMaritalStatus.single
         )
         self.assertEqual(user_married_score['life'], 3)
@@ -172,10 +172,10 @@ class RiskAlgorithmRulesTestCase(TestCase):
 
     @freeze_time('2020-01-04')
     def test_vehicle_rule(self):
-        user_with_new_vehicle_score = core.handle_scores_by_vehicle(
+        user_with_new_vehicle_score = rules.handle_scores_by_vehicle(
             dict(self.base_scores), vehicle={'year': 2019}
         )
-        user_with_old_vehicle_score = core.handle_scores_by_vehicle(
+        user_with_old_vehicle_score = rules.handle_scores_by_vehicle(
             dict(self.base_scores), vehicle={'year': 2012}
         )
         self.assertEqual(user_with_new_vehicle_score['auto'], 3)
