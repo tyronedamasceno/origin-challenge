@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from freezegun import freeze_time
 
-from api import core, rules
+from api import core, rules, utils
 from api.enum import Score, HouseOwnership, UserMaritalStatus
 
 
@@ -80,14 +80,14 @@ class UtilsFunctionsTestCase(TestCase):
         )
 
     def test_getting_score_by_value(self):
-        self.assertEqual(core.get_score_by_value(-1), Score.economic)
-        self.assertEqual(core.get_score_by_value(0), Score.economic)
+        self.assertEqual(utils.get_score_by_value(-1), Score.economic)
+        self.assertEqual(utils.get_score_by_value(0), Score.economic)
 
-        self.assertEqual(core.get_score_by_value(1), Score.regular)
-        self.assertEqual(core.get_score_by_value(2), Score.regular)
+        self.assertEqual(utils.get_score_by_value(1), Score.regular)
+        self.assertEqual(utils.get_score_by_value(2), Score.regular)
 
-        self.assertEqual(core.get_score_by_value(3), Score.responsible)
-        self.assertEqual(core.get_score_by_value(4), Score.responsible)
+        self.assertEqual(utils.get_score_by_value(3), Score.responsible)
+        self.assertEqual(utils.get_score_by_value(4), Score.responsible)
 
 
 class RiskAlgorithmRulesTestCase(TestCase):
