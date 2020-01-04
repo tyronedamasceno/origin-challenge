@@ -13,13 +13,13 @@ class RiskProfileEndpointTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.base_payload = {
-            "age": 35,
-            "dependents": 2,
-            "house": {"ownership_status": "owned"},
-            "income": 0,
-            "marital_status": "married",
-            "risk_questions": [0, 1, 0],
-            "vehicle": {"year": 2018}
+            'age': 35,
+            'dependents': 2,
+            'house': {'ownership_status': 'owned'},
+            'income': 0,
+            'marital_status': 'married',
+            'risk_questions': [0, 1, 0],
+            'vehicle': {'year': 2018}
         }
 
     def test_endpoint_only_accepts_post_requests(self):
@@ -72,11 +72,31 @@ class RiskProfileEndpointTestCase(TestCase):
     @freeze_time('2020-01-04')
     def test_successful_risk_profile_calculating_with_example_input(self):
         expected_response = {
-            "auto": "regular",
-            "disability": "ineligible",
-            "home": "economic",
-            "life": "regular"
+            'auto': 'regular',
+            'disability': 'ineligible',
+            'home': 'economic',
+            'life': 'regular'
         }
         response = self.client.post(RISK_URL, self.base_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
+
+    def test_successful_risk_profile_calculating_full_ineligible_user(self):
+        expected_response = {
+            'auto': 'ineligible',
+            'disability': 'ineligible',
+            'home': 'ineligible',
+            'life': 'ineligible'
+        }
+        payload = {
+            'age': 61,
+            'dependents': 1,
+            'house': {},
+            'income': 0,
+            'marital_status': 'married',
+            'risk_questions': [0, 1, 0],
+            'vehicle': {}
+        }
+        response = self.client.post(RISK_URL, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_response)
