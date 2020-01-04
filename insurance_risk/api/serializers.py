@@ -14,13 +14,15 @@ class VehicleSerializer(serializers.Serializer):
 
 
 class UserInputSerializer(serializers.Serializer):
-    age = serializers.IntegerField()
-    dependents = serializers.IntegerField()
-    income = serializers.IntegerField()
+    age = serializers.IntegerField(min_value=0)
+    dependents = serializers.IntegerField(min_value=0)
+    income = serializers.IntegerField(min_value=0)
     marital_status = serializers.ChoiceField(
         choices=UserMaritalStatus.choices()
     )
-    risk_questions = serializers.ListField(child=serializers.IntegerField())
+    risk_questions = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=1)
+    )
     house = HouseSerializer()
     vehicle = VehicleSerializer()
 
